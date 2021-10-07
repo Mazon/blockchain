@@ -34,15 +34,9 @@ func NewHash(time time.Time, transactions []string, prevHash []byte) []byte {
 	return hash[:]
 }
 
-
-func CreateTransaction() {
+func verifyBlock() {
 }
 
-func CommitTransactionSpend() {
-}
-
-func SendMoney() {
-}
 
 func Miner() {
 }

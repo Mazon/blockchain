@@ -6,7 +6,7 @@ package main
 // output's public key.
 //
 type CTXIn struct {
-  COutPoint prevout
+  COutPoint string
 }
 
 //
@@ -25,4 +25,13 @@ type Transaction struct {
   version int
   vin CTXIn
   vout CTXOut
+}
+
+func CreateTransaction() {
+}
+
+func CommitTransactionSpend() {
+}
+
+func SendMoney() {
 }
