@@ -20,3 +20,13 @@ func main() {
 	fmt.Println("--- Third Block ---")
 	printBlockInformation(block3)
 }
+
+//Creates a new transaction every 10 sec.
+stupidTransactionCreator() {
+}
+
+
+
+//Broadcasts a "valid" block every 30 sec
+stupidBlockBroadcaster() {
+}
