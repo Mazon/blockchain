@@ -35,16 +35,15 @@ func NewHash(time time.Time, transactions []string, prevHash []byte) []byte {
 	return hash[:]
 }
 
-func printBlockInformation(block *Block) {
-	fmt.Printf("\ttime: %s\n", block.timestamp.String())
-	fmt.Printf("\tprevHash: %x\n", block.prevHash)
-	fmt.Printf("\tHash: %x\n", block.Hash)
-	printTransactions(block)
+
+func CreateTransaction() {
 }
 
-func printTransactions(block *Block) {
-	fmt.Println("\tTransactions:")
-	for i, transaction := range block.transactions {
-		fmt.Printf("\t\t%v: %q\n", i, transaction)
-	}
+func CommitTransactionSpend() {
+}
+
+func SendMoney() {
+}
+
+func Miner() {
 }
