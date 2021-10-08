@@ -1,32 +1,24 @@
 package main
 
 import (
-	"fmt"
+	"log"
+	"time"
+
+	"github.com/davecgh/go-spew/spew"
 )
 
+//hashGenesisBlock := "0x000000000019d6689c085ae165831e934ff763ae46a2a6c172b3f1b60a8ce26f"
+
 func main() {
-	genesisTransactions := []string{"Izzy sent Will 50 bitcoin", "Will sent Izzy 30 bitcoin"}
-	genesisBlock := NewBlock(genesisTransactions, []byte{})
-	fmt.Println("--- First Block ---")
-	printBlockInformation(genesisBlock)
+	go func() {
+		t := time.Now()
+		genesisBlock := Block{}
+		genesisBlock = Block{0, t.String(), 0, calculateHash(genesisBlock), "", difficulty, ""}
+		spew.Dump(genesisBlock)
 
-	block2Transactions := []string{"John sent Izzy 30 bitcoin"}
-	block2 := NewBlock(block2Transactions, genesisBlock.Hash)
-	fmt.Println("--- Second Block ---")
-	printBlockInformation(block2)
-
-	block3Transactions := []string{"Will sent Izzy 45 bitcoin", "Izzy sent Will 10 bitcoin"}
-	block3 := NewBlock(block3Transactions, block2.Hash)
-	fmt.Println("--- Third Block ---")
-	printBlockInformation(block3)
-}
-
-//Creates a new transaction every 10 sec.
-stupidTransactionCreator() {
-}
-
-
-
-//Broadcasts a "valid" block every 30 sec
-stupidBlockBroadcaster() {
+		mutex.Lock()
+		Blockchain = append(Blockchain, genesisBlock)
+		mutex.Unlock()
+	}()
+	log.Fatal(run())
 }
