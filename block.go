@@ -4,7 +4,6 @@ import (
 	"crypto/sha256"
 	"encoding/hex"
 	"fmt"
-	"strconv"
 	"strings"
 	"sync"
 	"time"
@@ -13,105 +12,98 @@ import (
 const difficulty = 1
 
 type Block struct {
-	Index      int
+	//header
+	Version    uint32
 	Timestamp  string
-	BPM        int
-	Hash       string
-	PrevHash   string
-	Difficulty int
-	Nonce      string
+	PrevHash   []byte
+	Difficulty uint32
+	Nonce      uint32 //The solution to the block.
+	//body
+	Transactions []Transaction
+}
+
+//Metadata about the chain.
+type Metadata struct {
+	B []string
 }
 
 var Blockchain []Block
 
-type Message struct {
-	BPM int
-}
-
 var mutex = &sync.Mutex{}
 
-//Block struct.
-/*type Block struct {
-	timestamp    time.Time
-	transactions []string
-	prevHash     []byte
-	Hash         []byte
-	Difficulty   int
-}*/
-
-//NewBlock Creates a new block.
-/*func NewBlock(transactions []string, prevHash []byte) *Block {
-	currentTime := time.Now()
-	return &Block{
-		Timestamp:    currentTime,
-		transactions: transactions,
-		prevHash:     prevHash,
-		Hash:         NewHash(currentTime, transactions, prevHash),
-	}
-}
-
-//NewHash Creates a new hash.
-func NewHash(time time.Time, transactions []string, prevHash []byte) []byte {
-	input := append(prevHash, time.String()...)
-	for transaction := range transactions {
-		input = append(input, string(rune(transaction))...)
-	}
-	hash := sha256.Sum256(input)
-	return hash[:]
-}*/
 func isBlockValid(newBlock, oldBlock Block) bool {
-	if oldBlock.Index+1 != newBlock.Index {
-		return false
-	}
+	//if oldBlock.Index+1 != newBlock.Index {
+	//	return false
+	//}
 
-	if oldBlock.Hash != newBlock.PrevHash {
-		return false
-	}
+	//oldBlockHash := calculateHash(oldBlock)
+	//if oldBlockHash != newBlock.PrevHash {
+	//		return false
+	//	}
 
-	if calculateHash(newBlock) != newBlock.Hash {
-		return false
-	}
+	//if calculateHash(newBlock) != newBlock.Hash {
+	//		return false
+	//	}
 
 	return true
 }
 
-func isHashValid(hash string, difficulty int) bool {
-	prefix := strings.Repeat("0", difficulty)
-	return strings.HasPrefix(hash, prefix)
+func isHashValid(hash []byte, difficulty uint32) bool {
+	prefix := strings.Repeat("0", int(difficulty))
+	//fmt.Println(string(hash[:]))
+	return strings.HasPrefix(string(hash[:]), prefix)
 }
 
-func generateBlock(oldBlock Block, BPM int) Block {
+func generateBlock(oldBlock Block, tx []Transaction) Block {
 	var newBlock Block
 
 	t := time.Now()
 
-	newBlock.Index = oldBlock.Index + 1
 	newBlock.Timestamp = t.String()
-	newBlock.BPM = BPM
-	newBlock.PrevHash = oldBlock.Hash
+	newBlock.Transactions = tx
+
+	// generate block hash of old block header
+	oldBlockHash := calculateHash(oldBlock)
+	newBlock.PrevHash = oldBlockHash
+
 	newBlock.Difficulty = difficulty
 
 	for i := 0; ; i++ {
-		hex := fmt.Sprintf("%x", i)
-		newBlock.Nonce = hex
+		// increase nonce until hash is valid.
+		newBlock.Nonce = uint32(i)
 		if !isHashValid(calculateHash(newBlock), newBlock.Difficulty) {
-			fmt.Println(calculateHash(newBlock), " do more work!")
+			//fmt.Println(calculateHash(newBlock), " do more work!")
+			h := calculateHash(newBlock)
+			fmt.Println(hex.EncodeToString(h) + " do more work!")
 			time.Sleep(time.Second)
 			continue
 		} else {
-			fmt.Println(calculateHash(newBlock), " work done!")
-			newBlock.Hash = calculateHash(newBlock)
+			h := calculateHash(newBlock)
+			fmt.Println(hex.EncodeToString(h) + " work done!")
 			break
 		}
 
 	}
+	//fmt.Println(newBlock)
 	return newBlock
 }
 
-func calculateHash(block Block) string {
-	record := strconv.Itoa(block.Index) + block.Timestamp + strconv.Itoa(block.BPM) + block.PrevHash + block.Nonce
+//calculates the block header sha256 hash.
+func calculateHash(block Block) []byte {
+	bVersion := uinttobyte(block.Version)
+	bNonce := uinttobyte(block.Nonce)
+	bDifficulty := uinttobyte(block.Difficulty)
+
+	record := []byte{}
+	record = append(record, bVersion[:]...)
+	record = append(record, block.PrevHash[:]...)
+	record = append(record, bNonce[:]...)
+	record = append(record, []byte(block.Timestamp)[:]...)
+	record = append(record, bDifficulty[:]...)
+
 	h := sha256.New()
 	h.Write([]byte(record))
 	hashed := h.Sum(nil)
-	return hex.EncodeToString(hashed)
+	//fmt.Println(hex.EncodeToString(hashed))
+	return hashed
 }

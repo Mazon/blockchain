@@ -12,27 +12,19 @@ type MemPool struct {
 // transaction's output that it claims and a signature that matches the
 // output's public key.
 //
-type CTXIn struct {
-	CPrevTx   string
-	COutIndex int
-	ScriptSig Script
+type TxInput struct {
+	PrevOutputHash  []byte
+	PrevOutputIndex uint32
+	Signature       []byte // private key signature of owner.
 }
 
 //
 // An output of a transaction.  It contains the public key that the next input
 // must be able to sign with to claim it.
 //
-type CTXOut struct {
-	Value        int64 //the number of coins.
-	ScriptPubKey Script
-}
-
-//
-// A list of instructions recorded with each transaction that describe how the next person wanting to spend can gain access.
-//
-type Script struct {
-	Signature    string
-	ScriptPubKey string
+type TxOutput struct {
+	Value  uint64 //the number of coins.
+	PubKey []byte //pubkey of receiver.
 }
 
 //
@@ -40,8 +32,8 @@ type Script struct {
 // blocks.  A transaction can contain multiple inputs and outputs.
 //
 type Transaction struct {
-	input  []CTXIn
-	output []CTXOut
+	input  []TxInput
+	output []TxOutput
 }
 
 // Verifies incoming transactions and adds them to memPool.
@@ -73,4 +65,8 @@ func SendMoney() {
 
 // First transaction in a block.
 func coinBaseTransaction() {
+}
+
+//<Signature from Private Key A> <Public Key A> OP_CHECKSIG
+func validateTransaction() {
 }

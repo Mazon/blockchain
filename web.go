@@ -60,18 +60,24 @@ func respondWithJSON(w http.ResponseWriter, r *http.Request, code int, payload i
 
 func handleWriteBlock(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Content-Type", "application/json")
-	var m Message
 
-	decoder := json.NewDecoder(r.Body)
-	if err := decoder.Decode(&m); err != nil {
-		respondWithJSON(w, r, http.StatusBadRequest, r.Body)
-		return
-	}
+	// create tx
+	data := []byte{102, 97, 108, 99, 111, 110}
+	i1 := TxInput{}
+	o1 := TxOutput{Value: 100, PubKey: data}
+
+	tx := Transaction{[]TxInput{i1}, []TxOutput{o1}}
+
+	/*	decoder := json.NewDecoder(r.Body)
+		if err := decoder.Decode(&tx); err != nil {
+			respondWithJSON(w, r, http.StatusBadRequest, r.Body)
+			return
+		}*/
 	defer r.Body.Close()
 
 	//ensure atomicity when creating new block
 	mutex.Lock()
-	newBlock := generateBlock(Blockchain[len(Blockchain)-1], m.BPM)
+	newBlock := generateBlock(Blockchain[len(Blockchain)-1], []Transaction{tx})
 	mutex.Unlock()
 
 	if isBlockValid(newBlock, Blockchain[len(Blockchain)-1]) {

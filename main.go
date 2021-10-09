@@ -13,7 +13,7 @@ func main() {
 	go func() {
 		t := time.Now()
 		genesisBlock := Block{}
-		genesisBlock = Block{0, t.String(), 0, calculateHash(genesisBlock), "", difficulty, ""}
+		genesisBlock = Block{Version: 0, Timestamp: t.String(), Difficulty: 1, Nonce: 0}
 		spew.Dump(genesisBlock)
 
 		mutex.Lock()
