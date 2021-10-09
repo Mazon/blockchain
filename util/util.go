@@ -1,4 +1,4 @@
-package main
+package util
 
 import (
 	"bytes"
@@ -6,7 +6,7 @@ import (
 	"fmt"
 )
 
-func uinttobyte(source uint32) []byte {
+func Uinttobyte(source uint32) []byte {
 	buf := new(bytes.Buffer)
 	err := binary.Write(buf, binary.LittleEndian, source)
 	if err != nil {

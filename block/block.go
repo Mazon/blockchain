@@ -1,6 +1,9 @@
-package main
+package block
 
 import (
+	"blockchain/transaction"
+	"blockchain/util"
+
 	"crypto/sha256"
 	"encoding/hex"
 	"fmt"
@@ -19,7 +22,7 @@ type Block struct {
 	Difficulty uint32
 	Nonce      uint32 //The solution to the block.
 	//body
-	Transactions []Transaction
+	Transactions []transaction.Transaction
 }
 
 //Metadata about the chain.
@@ -28,10 +31,11 @@ type Metadata struct {
 }
 
 var Blockchain []Block
+var height uint32 // height in chain.
 
 var mutex = &sync.Mutex{}
 
-func isBlockValid(newBlock, oldBlock Block) bool {
+func IsBlockValid(newBlock, oldBlock Block) bool {
 	//if oldBlock.Index+1 != newBlock.Index {
 	//	return false
 	//}
@@ -54,7 +58,7 @@ func isHashValid(hash []byte, difficulty uint32) bool {
 	return strings.HasPrefix(string(hash[:]), prefix)
 }
 
-func generateBlock(oldBlock Block, tx []Transaction) Block {
+func GenerateBlock(oldBlock Block, tx []transaction.Transaction) Block {
 	var newBlock Block
 
 	t := time.Now()
@@ -90,9 +94,9 @@ func generateBlock(oldBlock Block, tx []Transaction) Block {
 
 //calculates the block header sha256 hash.
 func calculateHash(block Block) []byte {
-	bVersion := uinttobyte(block.Version)
-	bNonce := uinttobyte(block.Nonce)
-	bDifficulty := uinttobyte(block.Difficulty)
+	bVersion := util.Uinttobyte(block.Version)
+	bNonce := util.Uinttobyte(block.Nonce)
+	bDifficulty := util.Uinttobyte(block.Difficulty)
 
 	record := []byte{}
 	record = append(record, bVersion[:]...)

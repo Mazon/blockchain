@@ -1,4 +1,4 @@
-package main
+package transaction
 
 //
 // A pool of unconfirmed transactions waiting to be included in a block.
@@ -32,8 +32,8 @@ type TxOutput struct {
 // blocks.  A transaction can contain multiple inputs and outputs.
 //
 type Transaction struct {
-	input  []TxInput
-	output []TxOutput
+	Input  []TxInput
+	Output []TxOutput
 }
 
 // Verifies incoming transactions and adds them to memPool.

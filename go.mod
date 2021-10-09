@@ -1,4 +1,4 @@
-module github.com/Mazon/blockchain
+module blockchain
 
 go 1.17
 
