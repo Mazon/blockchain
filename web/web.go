@@ -1,15 +1,12 @@
 package web
 
 import (
-	"blockchain/block"
 	"blockchain/transaction"
-
 	"encoding/json"
-	"io"
+
 	"net/http"
 	"time"
 
-	"github.com/davecgh/go-spew/spew"
 	"github.com/gorilla/mux"
 )
 
@@ -41,12 +38,13 @@ func makeMuxRouter() http.Handler {
 }
 
 func handleGetBlockchain(w http.ResponseWriter, r *http.Request) {
-	bytes, err := json.MarshalIndent(block.Blockchain, "", "  ")
+	/*bytes, err := json.MarshalIndent(blockchain.Blockchain, "", "  ")
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return
 	}
 	io.WriteString(w, string(bytes))
+	*/
 }
 
 func respondWithJSON(w http.ResponseWriter, r *http.Request, code int, payload interface{}) {
@@ -70,6 +68,7 @@ func handleWriteBlock(w http.ResponseWriter, r *http.Request) {
 	o1 := transaction.TxOutput{Value: 100, PubKey: data}
 
 	tx := transaction.Transaction{[]transaction.TxInput{i1}, []transaction.TxOutput{o1}}
+	_ = tx
 
 	/*	decoder := json.NewDecoder(r.Body)
 		if err := decoder.Decode(&tx); err != nil {
@@ -80,14 +79,15 @@ func handleWriteBlock(w http.ResponseWriter, r *http.Request) {
 
 	//ensure atomicity when creating new block
 	//mutex.Lock()
-	newBlock := block.GenerateBlock(block.Blockchain[len(block.Blockchain)-1], []transaction.Transaction{tx})
+	//	newBlock := blockchain.GenerateBlock(blockchain.Blockchain[len(blockchain.Blockchain)-1], []transaction.Transaction{tx})
 	//mutex.Unlock()
 
-	if block.IsBlockValid(newBlock, block.Blockchain[len(block.Blockchain)-1]) {
-		block.Blockchain = append(block.Blockchain, newBlock)
-		spew.Dump(block.Blockchain)
-	}
+	//if blockchain.IsBlockValid(newBlock, blockchain.Blockchain[len(blockchain.Blockchain)-1]) {
+	//	blockchain.Blockchain = append(blockchain.Blockchain, newBlock)
+	//	spew.Dump(blockchain.Blockchain)
+	//}
 
-	respondWithJSON(w, r, http.StatusCreated, newBlock)
+	//respondWithJSON(w, r, http.StatusCreated, newBlock)
+	respondWithJSON(w, r, http.StatusCreated, 200)
 
 }
