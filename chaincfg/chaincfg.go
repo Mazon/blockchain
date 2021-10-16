@@ -1,7 +1,6 @@
 package chaincfg
 
 import (
-	"blockchain/blockchain"
 	"math/big"
 	"time"
 )
@@ -34,7 +33,7 @@ type Params struct {
 	DNSSeeds []DNSSeed
 
 	// GenesisBlock defines the first block of the chain.
-	GenesisBlock *blockchain.Block
+	//GenesisBlock *blockchain.Block
 
 	// GenesisHash is the starting block hash.
 	//GenesisHash *chainhash.Hash

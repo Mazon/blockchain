@@ -5,6 +5,7 @@
 package main
 
 import (
+	"fmt"
 	"os"
 	"os/signal"
 )
@@ -30,11 +31,12 @@ func interruptListener() <-chan struct{} {
 		// channel to notify the caller.
 		select {
 		case sig := <-interruptChannel:
-			btcdLog.Infof("Received signal (%s).  Shutting down...",
-				sig)
+			fmt.Print(sig)
+			//btcdLog.Infof("Received signal (%s).  Shutting down...",
+			//sig)
 
 		case <-shutdownRequestChannel:
-			btcdLog.Info("Shutdown requested.  Shutting down...")
+			//			btcdLog.Info("Shutdown requested.  Shutting down...")
 		}
 		close(c)
 
@@ -44,12 +46,13 @@ func interruptListener() <-chan struct{} {
 		for {
 			select {
 			case sig := <-interruptChannel:
-				btcdLog.Infof("Received signal (%s).  Already "+
-					"shutting down...", sig)
+				//			btcdLog.Infof("Received signal (%s).  Already "+
+				//				"shutting down...", sig)
+				fmt.Print(sig)
 
 			case <-shutdownRequestChannel:
-				btcdLog.Info("Shutdown requested.  Already " +
-					"shutting down...")
+				//				btcdLog.Info("Shutdown requested.  Already " +
+				//					"shutting down...")
 			}
 		}
 	}()

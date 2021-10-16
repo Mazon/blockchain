@@ -1,4 +1,4 @@
-package miner
+package mining
 
 import (
 	"blockchain/blockchain"
@@ -45,7 +45,7 @@ type Config struct {
 
 	// BlockTemplateGenerator identifies the instance to use in order to
 	// generate block templates that the miner will attempt to solve.
-	BlockTemplateGenerator *blockchain.BlkTmplGenerator
+	BlockTemplateGenerator *BlkTmplGenerator
 
 	// MiningAddrs is a list of payment addresses to use for the generated
 	// blocks.  Each generated block will randomly choose one of them.
@@ -118,7 +118,7 @@ type BlockTemplate struct {
 type Miner struct {
 	sync.Mutex
 	//g          *mining.BlkTmplGenerator
-	g          *blockchain.BlkTmplGenerator
+	g          *BlkTmplGenerator
 	cfg        Config
 	numWorkers uint32
 	started    bool
@@ -131,6 +131,38 @@ type Miner struct {
 	updateHashes      chan uint64
 	//	speedMonitorQuit  chan struct{}
 	quit chan struct{}
+}
+
+// BlkTmplGenerator provides a type that can be used to generate block templates
+// based on a given mining policy and source of transactions to choose from.
+// It also houses additional state required in order to ensure the templates
+// are built on top of the current best chain and adhere to the consensus rules.
+type BlkTmplGenerator struct {
+	//policy      *Policy
+	//chainParams *chaincfg.Params
+	//txSource TxSource
+	chain *blockchain.Blockchain
+	//timeSource blockchain.MedianTimeSource
+	//sigCache   *txscript.SigCache
+	//hashCache *txscript.HashCache
+}
+
+// NewBlkTmplGenerator returns a new block template generator for the given
+// policy using transactions from the provided transaction source.
+//
+// The additional state-related fields are required in order to ensure the
+// templates are built on top of the current best chain and adhere to the
+// consensus rules.
+/*func NewBlkTmplGenerator(policy *Policy, params *chaincfg.Params,
+txSource TxSource, chain *blockchain.BlockChain,
+timeSource blockchain.MedianTimeSource,
+sigCache *txscript.SigCache,
+hashCache *txscript.HashCache) *BlkTmplGenerator {
+*/
+func NewBlkTmplGenerator(policy *Policy, params *chaincfg.Params, chain *blockchain.Blockchain) *BlkTmplGenerator {
+	return &BlkTmplGenerator{
+		chain: chain,
+	}
 }
 
 // Start begins the mining proces.

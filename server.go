@@ -3,8 +3,8 @@ package main
 import (
 	"blockchain/blockchain"
 	"blockchain/chaincfg"
+	"blockchain/mining"
 	miner "blockchain/mining"
-	"errors"
 	"fmt"
 	"net"
 	"sync"
@@ -48,7 +48,6 @@ type server struct {
 	//db         database.DB
 	//timeSource blockchain.MedianTimeSource
 	//services wire.ServiceFlag
-
 	// The following fields are used for optional indexes.  They will be nil
 	// if the associated index is not enabled.  These fields are set during
 	// initial creation of the server and never changed afterwards, so they
@@ -56,11 +55,9 @@ type server struct {
 	//txIndex   *indexers.TxIndex
 	//addrIndex *indexers.AddrIndex
 	//cfIndex *indexers.CfIndex
-
 	// The fee estimator keeps track of how long transactions are left in
 	// the mempool before they are mined into blocks.
 	//feeEstimator *mempool.FeeEstimator
-
 	// cfCheckptCaches stores a cached slice of filter headers for cfcheckpt
 	// messages for each filter type.
 	//	cfCheckptCaches    map[wire.FilterType][]cfHeaderKV
@@ -72,7 +69,6 @@ type server struct {
 // connections from peers.
 func newServer(chainParams *chaincfg.Params, interrupt <-chan struct{}) (*server, error) {
 	//	db database.DB, chainParams *chaincfg.Params,
-
 	//services := defaultServices
 	//if cfg.NoPeerBloomFilters {
 	//	services &^= wire.SFNodeBloom
@@ -80,10 +76,9 @@ func newServer(chainParams *chaincfg.Params, interrupt <-chan struct{}) (*server
 	//	if cfg.NoCFilters {
 	//		services &^= wire.SFNodeCF
 	//	}
-
 	//	amgr := addrmgr.New(cfg.DataDir, btcdLookup)
-
 	var listeners []net.Listener
+	_ = listeners
 	//	var nat NAT
 	if !cfg.DisableListen {
 		//var err error
@@ -96,14 +91,12 @@ func newServer(chainParams *chaincfg.Params, interrupt <-chan struct{}) (*server
 		//	return nil, errors.New("no valid listen address")
 		//}
 	}
-
 	//	if len(agentBlacklist) > 0 {
 	//		srvrLog.Infof("User-agent blacklist %s", agentBlacklist)
 	//	}
 	//	if len(agentWhitelist) > 0 {
 	//		srvrLog.Infof("User-agent whitelist %s", agentWhitelist)
 	//	}
-
 	s := server{
 		//		chainParams:          chainParams,
 		//		addrManager:          amgr,
@@ -126,7 +119,6 @@ func newServer(chainParams *chaincfg.Params, interrupt <-chan struct{}) (*server
 		//		agentBlacklist:       agentBlacklist,
 		//		agentWhitelist:       agentWhitelist,
 	}
-
 	// Create the transaction and address indexes if needed.
 	//
 	// CAUTION: the txindex needs to be first in the indexes array because
@@ -144,7 +136,6 @@ func newServer(chainParams *chaincfg.Params, interrupt <-chan struct{}) (*server
 	//		} else {
 	//			indxLog.Info("Transaction index is enabled")
 	//		}
-
 	//		s.txIndex = indexers.NewTxIndex(db)
 	//		indexes = append(indexes, s.txIndex)
 	//	}
@@ -172,7 +163,7 @@ func newServer(chainParams *chaincfg.Params, interrupt <-chan struct{}) (*server
 	//	}
 
 	// Create a new block chain instance with the appropriate configuration.
-	/*var err error
+	var err error
 	s.chain, err = blockchain.New(&blockchain.Config{
 		//		DB:           s.db,
 		//		Interrupt:    interrupt,
@@ -185,7 +176,7 @@ func newServer(chainParams *chaincfg.Params, interrupt <-chan struct{}) (*server
 	})
 	if err != nil {
 		return nil, err
-	}*/
+	}
 
 	// Search for a FeeEstimator state in the database. If none can be found
 	// or if it cannot be loaded, create a new one.
@@ -268,9 +259,9 @@ func newServer(chainParams *chaincfg.Params, interrupt <-chan struct{}) (*server
 		BlockMinSize:      cfg.BlockMinSize,
 		BlockMaxSize:      cfg.BlockMaxSize,
 		BlockPrioritySize: cfg.BlockPrioritySize,
-		TxMinFreeFee:      cfg.minRelayTxFee,
+		//	TxMinFreeFee:      cfg.minRelayTxFee,
 	}
-	blockTemplateGenerator := mining.NewBlkTmplGenerator(&policy) //s.chainParams, s.txMemPool, s.chain, s.timeSource,
+	blockTemplateGenerator := mining.NewBlkTmplGenerator(&policy, s.chainParams, s.chain) //s.chainParams, s.txMemPool, s.chain, s.timeSource,
 	//s.sigCache, s.hashCache)
 
 	s.Miner = miner.New(&miner.Config{
@@ -288,86 +279,86 @@ func newServer(chainParams *chaincfg.Params, interrupt <-chan struct{}) (*server
 	// specified peers and actively avoid advertising and connecting to
 	// discovered peers in order to prevent it from becoming a public test
 	// network.
-	var newAddressFunc func() (net.Addr, error)
-	if !cfg.SimNet && len(cfg.ConnectPeers) == 0 {
-		newAddressFunc = func() (net.Addr, error) {
-			for tries := 0; tries < 100; tries++ {
-				addr := s.addrManager.GetAddress()
-				if addr == nil {
-					break
+	/*	var newAddressFunc func() (net.Addr, error)
+		if !cfg.SimNet && len(cfg.ConnectPeers) == 0 {
+			newAddressFunc = func() (net.Addr, error) {
+				for tries := 0; tries < 100; tries++ {
+					addr := s.addrManager.GetAddress()
+					if addr == nil {
+						break
+					}
+
+					// Address will not be invalid, local or unroutable
+					// because addrmanager rejects those on addition.
+					// Just check that we don't already have an address
+					// in the same group so that we are not connecting
+					// to the same network segment at the expense of
+					// others.
+					key := addrmgr.GroupKey(addr.NetAddress())
+					if s.OutboundGroupCount(key) != 0 {
+						continue
+					}
+
+					// only allow recent nodes (10mins) after we failed 30
+					// times
+					if tries < 30 && time.Since(addr.LastAttempt()) < 10*time.Minute {
+						continue
+					}
+
+					// allow nondefault ports after 50 failed tries.
+					if tries < 50 && fmt.Sprintf("%d", addr.NetAddress().Port) !=
+						activeNetParams.DefaultPort {
+						continue
+					}
+
+					// Mark an attempt for the valid address.
+					//		s.addrManager.Attempt(addr.NetAddress())
+
+					//				addrString := addrmgr.NetAddressKey(addr.NetAddress())
+					//			return addrStringToNetAddr(addrString)
 				}
 
-				// Address will not be invalid, local or unroutable
-				// because addrmanager rejects those on addition.
-				// Just check that we don't already have an address
-				// in the same group so that we are not connecting
-				// to the same network segment at the expense of
-				// others.
-				key := addrmgr.GroupKey(addr.NetAddress())
-				if s.OutboundGroupCount(key) != 0 {
-					continue
-				}
-
-				// only allow recent nodes (10mins) after we failed 30
-				// times
-				if tries < 30 && time.Since(addr.LastAttempt()) < 10*time.Minute {
-					continue
-				}
-
-				// allow nondefault ports after 50 failed tries.
-				if tries < 50 && fmt.Sprintf("%d", addr.NetAddress().Port) !=
-					activeNetParams.DefaultPort {
-					continue
-				}
-
-				// Mark an attempt for the valid address.
-				//		s.addrManager.Attempt(addr.NetAddress())
-
-				//				addrString := addrmgr.NetAddressKey(addr.NetAddress())
-				//			return addrStringToNetAddr(addrString)
+				return nil, errors.New("no valid connect address")
 			}
-
-			return nil, errors.New("no valid connect address")
 		}
-	}
 
-	// Create a connection manager.
-	targetOutbound := defaultTargetOutbound
-	if cfg.MaxPeers < targetOutbound {
-		targetOutbound = cfg.MaxPeers
-	}
-	cmgr, err := connmgr.New(&connmgr.Config{
-		Listeners:      listeners,
-		OnAccept:       s.inboundPeerConnected,
-		RetryDuration:  connectionRetryInterval,
-		TargetOutbound: uint32(targetOutbound),
-		Dial:           btcdDial,
-		OnConnection:   s.outboundPeerConnected,
-		GetNewAddress:  newAddressFunc,
-	})
-	if err != nil {
-		return nil, err
-	}
-	s.connManager = cmgr
-
-	// Start up persistent peers.
-	permanentPeers := cfg.ConnectPeers
-	if len(permanentPeers) == 0 {
-		permanentPeers = cfg.AddPeers
-	}
-	for _, addr := range permanentPeers {
-		netAddr, err := addrStringToNetAddr(addr)
+		// Create a connection manager.
+		targetOutbound := defaultTargetOutbound
+		if cfg.MaxPeers < targetOutbound {
+			targetOutbound = cfg.MaxPeers
+		}
+		cmgr, err := connmgr.New(&connmgr.Config{
+			Listeners:      listeners,
+			OnAccept:       s.inboundPeerConnected,
+			RetryDuration:  connectionRetryInterval,
+			TargetOutbound: uint32(targetOutbound),
+			Dial:           btcdDial,
+			OnConnection:   s.outboundPeerConnected,
+			GetNewAddress:  newAddressFunc,
+		})
 		if err != nil {
 			return nil, err
 		}
+		s.connManager = cmgr
 
-		go s.connManager.Connect(&connmgr.ConnReq{
-			Addr:      netAddr,
-			Permanent: true,
-		})
-	}
+		// Start up persistent peers.
+		permanentPeers := cfg.ConnectPeers
+		if len(permanentPeers) == 0 {
+			permanentPeers = cfg.AddPeers
+		}
+		for _, addr := range permanentPeers {
+			netAddr, err := addrStringToNetAddr(addr)
+			if err != nil {
+				return nil, err
+			}
 
-	if !cfg.DisableRPC {
+			go s.connManager.Connect(&connmgr.ConnReq{
+				Addr:      netAddr,
+				Permanent: true,
+			})
+		}
+	*/
+	/*if !cfg.DisableRPC {
 		// Setup listeners for the configured RPC listen addresses and
 		// TLS settings.
 		rpcListeners, err := setupRPCListeners()
@@ -404,7 +395,7 @@ func newServer(chainParams *chaincfg.Params, interrupt <-chan struct{}) (*server
 			<-s.rpcServer.RequestedProcessShutdown()
 			shutdownRequestChannel <- struct{}{}
 		}()
-	}
+	}*/
 
 	return &s, nil
 }
@@ -440,7 +431,6 @@ func (s *server) Start() {
 
 		//	s.rpcServer.Start()
 	}
-
 	// Start the CPU miner if generation is enabled.
 	if cfg.Generate {
 		s.Miner.Start()
