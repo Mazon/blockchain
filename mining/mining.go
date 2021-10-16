@@ -8,6 +8,8 @@ import (
 	"runtime"
 	"sync"
 	"time"
+
+	log "github.com/golang/glog"
 )
 
 const (
@@ -181,7 +183,7 @@ func (m *Miner) Start() {
 	go m.miningWorkerController()
 
 	m.started = true
-	//log.Infof("miner started")
+	log.Info("miner started")
 }
 
 // miningWorkerController launches the worker goroutines that are used to
@@ -254,7 +256,7 @@ out:
 //
 // It must be run as a goroutine.
 func (m *Miner) generateBlocks(quit chan struct{}) {
-	//log.Tracef("Starting generate blocks worker")
+	log.Info("Starting generate blocks worker")
 
 	// Start a ticker which is used to signal checks for stale work and
 	// updates to the speed monitor.
@@ -304,8 +306,7 @@ out:
 		if err != nil {
 			errStr := fmt.Sprintf("Failed to create new block "+
 				"template: %v", err)
-			_ = errStr
-			//			log.Errorf(errStr)
+			log.Fatalf("%s.\n", errStr)
 			continue
 		}
 
@@ -321,7 +322,7 @@ out:
 	}
 
 	m.workerWg.Done()
-	//	log.Tracef("Generate blocks worker done")
+	log.Infof("Generate blocks worker done")
 }
 
 // solveBlock attempts to find some combination of a nonce, extra nonce, and

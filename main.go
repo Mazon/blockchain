@@ -1,6 +1,9 @@
 package main
 
-//hashGenesisBlock := "0x000000000019d6689c085ae165831e934ff763ae46a2a6c172b3f1b60a8ce26f"
+import (
+	log "github.com/golang/glog"
+)
+
 var (
 	cfg *config
 )
@@ -23,15 +26,14 @@ func main() {
 	server, err := newServer(activeNetParams.Params, interrupt)
 	if err != nil {
 		// TODO: this logging could do with some beautifying.
-		//btcdLog.Errorf("Unable to start server on %v: %v",
-		//		cfg.Listeners, err)
+		log.Errorf("Unable to start server on %v: %v", cfg.Listeners, err)
 		return
 	}
 	defer func() {
-		//btcdLog.Infof("Gracefully shutting down the server...")
-		//server.Stop()
+		log.Info("Gracefully shutting down the server...")
+		//		server.Stop()
 		//server.WaitForShutdown()
-		//srvrLog.Infof("Server shutdown complete")
+		log.Info("Server shutdown complete")
 	}()
 	server.Start()
 	//if serverChan != nil {

@@ -5,7 +5,6 @@ import (
 	"blockchain/chaincfg"
 	"blockchain/mining"
 	miner "blockchain/mining"
-	"fmt"
 	"net"
 	"sync"
 	"sync/atomic"
@@ -80,17 +79,14 @@ func newServer(chainParams *chaincfg.Params, interrupt <-chan struct{}) (*server
 	var listeners []net.Listener
 	_ = listeners
 	//	var nat NAT
-	if !cfg.DisableListen {
-		//var err error
-		fmt.Println("listening")
-		//	listeners, nat, err = initListeners(amgr, listenAddrs, services)
-		//if err != nil {
-		//	return nil, err
-		//}
-		//if len(listeners) == 0 {
-		//	return nil, errors.New("no valid listen address")
-		//}
-	}
+	//var err error
+	//	listeners, nat, err = initListeners(amgr, listenAddrs, services)
+	//if err != nil {
+	//	return nil, err
+	//}
+	//if len(listeners) == 0 {
+	//	return nil, errors.New("no valid listen address")
+	//}
 	//	if len(agentBlacklist) > 0 {
 	//		srvrLog.Infof("User-agent blacklist %s", agentBlacklist)
 	//	}
