@@ -248,13 +248,13 @@ func newServer(chainParams *chaincfg.Params, interrupt <-chan struct{}) (*server
 	// configuration options.
 	//
 	// NOTE: The miner relies on the mempool, so the mempool has to be
-	// created before calling the function to create the CPU miner.
+	// created before calling the function to create the miner.
 	policy := miner.Policy{
-		BlockMinWeight:    cfg.BlockMinWeight,
-		BlockMaxWeight:    cfg.BlockMaxWeight,
-		BlockMinSize:      cfg.BlockMinSize,
-		BlockMaxSize:      cfg.BlockMaxSize,
-		BlockPrioritySize: cfg.BlockPrioritySize,
+		//	BlockMinWeight:    cfg.BlockMinWeight,
+		//BlockMaxWeight:    cfg.BlockMaxWeight,
+		//BlockMinSize:      cfg.BlockMinSize,
+		//BlockMaxSize:      cfg.BlockMaxSize,
+		//BlockPrioritySize: cfg.BlockPrioritySize,
 		//	TxMinFreeFee:      cfg.minRelayTxFee,
 	}
 	blockTemplateGenerator := mining.NewBlkTmplGenerator(&policy, s.chainParams, s.chain) //s.chainParams, s.txMemPool, s.chain, s.timeSource,
@@ -418,16 +418,16 @@ func (s *server) Start() {
 	//	go s.upnpUpdateThread()
 	//}
 
-	if !cfg.DisableRPC {
-		s.wg.Add(1)
+	//if !cfg.DisableRPC {
+	s.wg.Add(1)
 
-		// Start the rebroadcastHandler, which ensures user tx received by
-		// the RPC server are rebroadcast until being included in a block.
-		//	go s.rebroadcastHandler()
+	// Start the rebroadcastHandler, which ensures user tx received by
+	// the RPC server are rebroadcast until being included in a block.
+	//	go s.rebroadcastHandler()
 
-		//	s.rpcServer.Start()
-	}
-	// Start the CPU miner if generation is enabled.
+	//	s.rpcServer.Start()
+	//}
+	// Start the miner if generation is enabled.
 	if cfg.Generate {
 		s.Miner.Start()
 	}
